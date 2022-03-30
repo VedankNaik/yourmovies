@@ -6,27 +6,48 @@ import MovieListHeading from "./components/MovieListHeading";
 import SearchBox from "./components/SearchBox";
 import AddFavourites from "./components/AddFavourites";
 import RemoveFavourites from "./components/RemoveFavourites";
+import randomWords from "random-words";
 
 const App = () => {
   const [movies, setMovies] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [searchValue, setSearchValue] = useState("");
+  const [yearValue, setYearValue] = useState();
+  const [typeValue, setTypeValue] = useState("");
 
-  const getMovieRequest = async (searchValue) => {
-    const url = `http://www.omdbapi.com/?s=${searchValue}&apikey=d847e759`;
+  const message = {
+    fontSize: "30px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  };
 
-    const response = await fetch(url);
-    const responseJson = await response.json();
-
-    if (responseJson.Search) {
-      setMovies(responseJson.Search);
+  const getMovieRequest = async () => {
+    console.log("~ sessssarchValue", searchValue);
+    let url;
+    if (searchValue === "") {
+      url = `http://www.omdbapi.com/?s=${randomWords()}&apikey=d847e759&y=${yearValue}&type=${typeValue}`;
+    } else {
+      url = `http://www.omdbapi.com/?s=${searchValue}&apikey=d847e759&y=${yearValue}&type=${typeValue}`;
     }
-    console.log(movies);
+    console.log("~ url", url);
+
+    if (url) {
+      const response = await fetch(url);
+      const responseJson = await response.json();
+      if (responseJson.Search) {
+        setMovies(responseJson.Search);
+      }
+    }
   };
 
   useEffect(() => {
-    getMovieRequest(searchValue);
-  }, [searchValue]);
+    getMovieRequest();
+  }, []);
+
+  // useEffect(() => {
+  //   getMovieRequest(searchValue);
+  // }, [searchValue]);
 
   useEffect(() => {
     const movieFavourites = JSON.parse(
@@ -59,27 +80,48 @@ const App = () => {
 
   return (
     <div className="container-fluid movie-app">
-      <div className="row d-flex align-items-center mx-5 mt-4 mb-4">
+      <div className="row d-flex mx-5 mt-4 mb-4">
         <MovieListHeading heading="Movies" />
-        <SearchBox searchValue={searchValue} setSearchValue={setSearchValue} />
+        {/* <SearchBox searchValue={searchValue} setSearchValue={setSearchValue} /> */}
       </div>
-      <div className="row">
-        <MovieList
-          movies={movies}
-          handleFavouritesClick={addFavouriteMovie}
-          favouriteComponent={AddFavourites}
+      <div
+        className="row"
+        style={{ overflow: "visible", paddingBottom: "30px" }}
+      >
+        <SearchBox
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          yearValue={yearValue}
+          setYearValue={setYearValue}
+          typeValue={typeValue}
+          setTypeValue={setTypeValue}
+          getMovieRequest={getMovieRequest}
         />
       </div>
-      <div className="row d-flex align-items-center mx-5 mt-4 mb-4">
+      {movies && (
+        <div className="row">
+          <MovieList
+            movies={movies}
+            handleFavouritesClick={addFavouriteMovie}
+            favouriteComponent={AddFavourites}
+          />
+        </div>
+      )}
+      {movies.length === 0 && <div style={message}>Loading...</div>}
+      <hr />
+      <div className="row d-flex mx-5 mt-4 mb-4">
         <MovieListHeading heading="Favourites" />
       </div>
-      <div className="row">
-        <MovieList
-          movies={favourites}
-          handleFavouritesClick={removeFavouriteMovie}
-          favouriteComponent={RemoveFavourites}
-        />
-      </div>
+      {favourites && (
+        <div className="row">
+          <MovieList
+            movies={favourites}
+            handleFavouritesClick={removeFavouriteMovie}
+            favouriteComponent={RemoveFavourites}
+          />
+        </div>
+      )}
+      {favourites.length === 0 && <div style={message}>No favourites</div>}
     </div>
   );
 };
