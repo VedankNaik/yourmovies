@@ -5,7 +5,7 @@
 * [Demo](#demo)
 
 ## General info
-Search your movies and add to favourites.
+Search your movies with omdb api and add to favourites.
 
 ## Technologies
 Project is created with:
